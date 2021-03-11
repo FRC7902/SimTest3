@@ -7,13 +7,26 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.AnalogGyro;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PWMSparkMax;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
+import edu.wpi.first.wpilibj.simulation.EncoderSim;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim.KitbotGearing;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim.KitbotMotor;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim.KitbotWheelSize;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.system.plant.DCMotor;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -34,6 +47,28 @@ public class Robot extends TimedRobot {
   public final Field2d m_field = new Field2d();
 
   private final Joystick m_stick = new Joystick(0);
+
+  private Encoder m_leftEncoder = new Encoder(0, 1);
+  private Encoder m_rightEncoder = new Encoder(2, 3);
+
+  private EncoderSim m_leftEncoderSim = new EncoderSim(m_leftEncoder);
+  private EncoderSim m_rightEncoderSim = new EncoderSim(m_rightEncoder);
+
+  private AnalogGyro m_gyro = new AnalogGyro(1);
+
+  private AnalogGyroSim m_gyroSim = new AnalogGyroSim(m_gyro);
+
+
+  DifferentialDriveOdometry m_odometry = new DifferentialDriveOdometry(m_gyro.getRotation2d(), new Pose2d(5, 5, new Rotation2d()));
+
+
+  private DifferentialDrivetrainSim m_driveTrainSim = DifferentialDrivetrainSim.createKitbotSim(
+    KitbotMotor.kDualCIMPerSide, 
+    KitbotGearing.k10p71, 
+    KitbotWheelSize.SixInch, null);
+
+    double kEncoderResolution = 360.0; 
+
   
 
   /**
@@ -46,6 +81,12 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
     SmartDashboard.putData("Field", m_field);
+
+    m_leftEncoder.setDistancePerPulse(2 * Math.PI * 3 / kEncoderResolution);
+    m_rightEncoder.setDistancePerPulse(2 * Math.PI * 3 / kEncoderResolution);
+
+
+
   }
 
   /**
@@ -58,8 +99,24 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    
+    m_driveTrainSim.setInputs(m_leftMotor.get() * RobotController.getInputVoltage(), m_rightMotor.get() * RobotController.getInputVoltage());
+
+    m_driveTrainSim.update(0.02);
+
+
+    m_leftEncoderSim.setDistance(m_driveTrainSim.getLeftPositionMeters());
+    m_leftEncoderSim.setRate(m_driveTrainSim.getLeftVelocityMetersPerSecond());
+    m_rightEncoderSim.setDistance(m_driveTrainSim.getRightPositionMeters());
+    m_rightEncoderSim.setRate(m_driveTrainSim.getRightVelocityMetersPerSecond());
+    m_gyroSim.setAngle(-m_driveTrainSim.getHeading().getDegrees());
+
+    m_odometry.update(m_gyro.getRotation2d(), m_leftEncoder.getDistance(), m_rightEncoder.getDistance());
+
+    m_field.setRobotPose(m_odometry.getPoseMeters());
+
+
   }
+
 
   /**
    * This autonomous (along with the chooser code above) shows how to select
@@ -90,8 +147,8 @@ public class Robot extends TimedRobot {
         break;
       case kDefaultAuto:
       default:
-        m_leftMotor.set(0.5);
-        m_rightMotor.set(0.5);
+        m_leftMotor.set(1);
+        m_rightMotor.set(1);
         break;
     }
   }
@@ -101,7 +158,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    m_robotDrive.arcadeDrive(m_stick.getY(), m_stick.getX());
+    // m_robotDrive.arcadeDrive(m_stick.getX(), m_stick.getY());
+
+    m_leftMotor.set(-m_stick.getY()+m_stick.getX());
+    m_rightMotor.set(-m_stick.getY()-m_stick.getX());
   }
 
   /**
