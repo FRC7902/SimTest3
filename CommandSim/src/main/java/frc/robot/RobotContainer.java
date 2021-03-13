@@ -35,6 +35,7 @@ public class RobotContainer {
 
   private final ExampleCommand m_autoCommand = new ExampleCommand(m_exampleSubsystem);
   private final DriveForwardAndTurn driveForwardAndTurn = new DriveForwardAndTurn(m_robotDrive);
+  
 
   SendableChooser<Command> m_chooser = new SendableChooser<>();
 
@@ -74,19 +75,20 @@ public class RobotContainer {
   private void configureButtonBindings() {
 
     new JoystickButton(m_stick, 1)
-      .whenPressed(() -> m_robotDrive.setIfSlowSpeed(true))
-      .whenReleased(() -> m_robotDrive.setIfSlowSpeed(false));
+      .whileHeld(() -> m_robotArm.setArmAngle(45))
+      .whenReleased(()-> m_robotArm.setMotor(0));
 
     new JoystickButton(m_stick, 2)
       .whenPressed(() -> m_robotDrive.resetOdometry(new Pose2d(5, 5, new Rotation2d())));
 
 
     new JoystickButton(m_stick, 3)
-      .whenPressed(() -> m_robotArm.setMotor(-0.5))
+      .whenPressed(() -> m_robotArm.setMotor(1))
       .whenReleased(() -> m_robotArm.setMotor(0));
 
     new JoystickButton(m_stick, 4)
-      .whenPressed(() -> m_robotArm.resetEncoder());
+      .whenPressed(() -> m_robotArm.setMotor(-1))
+      .whenReleased(() -> m_robotArm.setMotor(0));
   }
 
   public DriveSubsystem getRobotDrive(){
