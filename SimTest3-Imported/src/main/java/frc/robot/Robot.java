@@ -12,7 +12,9 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PWMSparkMax;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
@@ -46,6 +48,12 @@ public class Robot extends TimedRobot {
   //Motors
   private final PWMSparkMax m_leftMotor = new PWMSparkMax(0);
   private final PWMSparkMax m_rightMotor = new PWMSparkMax(1);
+
+
+  private final SpeedControllerGroup m_rightSide = new SpeedControllerGroup(m_rightMotor);
+  private final SpeedControllerGroup m_leftSide = new SpeedControllerGroup(m_leftMotor);
+
+  private final Timer m_timer = new Timer();
 
   //Encoders
   private Encoder m_leftEncoder = new Encoder(0, 1);
@@ -147,6 +155,9 @@ public class Robot extends TimedRobot {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
+
+    m_timer.reset();
+    m_timer.start();
   }
 
   /**
@@ -157,11 +168,17 @@ public class Robot extends TimedRobot {
     switch (m_autoSelected) {
       case kCustomAuto:
         // Put custom auto code here
+
         break;
       case kDefaultAuto:
       default:
-        m_leftMotor.set(1);
-        m_rightMotor.set(1);
+        if(m_timer.get() < 2.0){
+          m_leftMotor.set(1);
+          m_rightMotor.set(1);
+        }else{
+          m_leftMotor.stopMotor();
+          m_rightMotor.stopMotor();
+        }
         break;
     }
   }
