@@ -48,9 +48,10 @@ public class Robot extends TimedRobot {
   //Motors
   private final PWMSparkMax m_leftMotor = new PWMSparkMax(0);
   private final PWMSparkMax m_rightMotor = new PWMSparkMax(1);
+  private final PWMSparkMax m_rightMotor2 = new PWMSparkMax(2);
 
 
-  private final SpeedControllerGroup m_rightSide = new SpeedControllerGroup(m_rightMotor);
+  private final SpeedControllerGroup m_rightSide = new SpeedControllerGroup(m_rightMotor, m_rightMotor2);
   private final SpeedControllerGroup m_leftSide = new SpeedControllerGroup(m_leftMotor);
 
   private final Timer m_timer = new Timer();
