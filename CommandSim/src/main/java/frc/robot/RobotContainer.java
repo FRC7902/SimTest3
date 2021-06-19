@@ -75,7 +75,7 @@ public class RobotContainer {
   private void configureButtonBindings() {
 
     new JoystickButton(m_stick, 1)
-      .whileHeld(() -> m_robotArm.setArmAngle(45))
+      .whileHeld(() -> m_robotArm.setArmAnglePIDF(30))
       .whenReleased(()-> m_robotArm.setMotor(0));
 
     new JoystickButton(m_stick, 2)

@@ -34,7 +34,7 @@ public class ArmSubsystem extends SubsystemBase {
   private final DCMotor m_armGearbox = DCMotor.getVex775Pro(2);
 
   //PID controller
-  private final PIDController m_controller = new PIDController(3, 5, 0.1);
+  private final PIDController m_controller = new PIDController(1.5, 0, 0.09);// I: 5
 
   //Feedforward controller 
   private final ArmFeedforward m_feedforward = new ArmFeedforward(100, 4, 1, 0);
@@ -46,7 +46,7 @@ public class ArmSubsystem extends SubsystemBase {
       100, 
       SingleJointedArmSim.estimateMOI(1, 6.0), 
       1, 
-      Units.degreesToRadians(0), 
+      Units.degreesToRadians(-90), 
       Units.degreesToRadians(180), 
       6.0, 
       true,
@@ -109,9 +109,10 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   //Use PID to set the arm to an angle
-  public void setArmAngle(double angle){
+  public void setArmAnglePIDF(double angle){
     var pidOutput = m_controller.calculate(getAngle(), angle);
-    m_motor.setVoltage(pidOutput);
+    double feedforwardOutput = Math.cos(Units.degreesToRadians(angle)) * 4.06;
+    m_motor.setVoltage(pidOutput + feedforwardOutput);
     // m_motor.setVoltage(m_feedforward.calculate(Units.degreesToRadians(45), 0));
     // m_motor.setVoltage(5);
   }
