@@ -14,7 +14,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.DriveForwardAndTurn;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.TrackItem;
 import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.subsystems.CameraSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,10 +34,11 @@ public class RobotContainer {
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
   private final ArmSubsystem m_robotArm = new ArmSubsystem();
+  private final CameraSubsystem m_robotCam = new CameraSubsystem();
 
   private final ExampleCommand m_autoCommand = new ExampleCommand(m_exampleSubsystem);
   private final DriveForwardAndTurn driveForwardAndTurn = new DriveForwardAndTurn(m_robotDrive);
-  
+  private final TrackItem trackItem = new TrackItem(m_robotDrive, m_robotCam);
 
   SendableChooser<Command> m_chooser = new SendableChooser<>();
 
@@ -61,6 +64,7 @@ public class RobotContainer {
     );
 
     m_chooser.setDefaultOption("Drive Forward and Turn", driveForwardAndTurn);
+    m_chooser.addOption("Track Item", trackItem);
 
     Shuffleboard.getTab("Autonomous").add(m_chooser);
 
@@ -93,6 +97,10 @@ public class RobotContainer {
 
   public DriveSubsystem getRobotDrive(){
     return m_robotDrive;
+  }
+
+  public CameraSubsystem getRobotCam(){
+    return m_robotCam;
   }
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
